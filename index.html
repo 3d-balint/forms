@@ -30,7 +30,6 @@ h1{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
     gap:18px;
-    margin-top:20px;
 }
 
 .card{
@@ -106,17 +105,22 @@ button:hover{
 
 <script>
 
-// 🔧 TERMÉKEK GENERÁLÁSA
-const products = document.getElementById("products");
+// Termékek automatikus létrehozása
 
-for (let i = 1; i <= 10; i++) {
-    products.innerHTML += `
+const products=document.getElementById("products");
+
+for(let i=1;i<=10;i++){
+
+    let html=`
     <div class="card">
         <h3>Termék ${i}</h3>
 
-        <div class="img">Kép helye</div>
+        <div class="img">
+            Kép helye
+        </div>
 
         <label>Darabszám</label>
+
         <select id="termek${i}">
             <option value="0">0</option>
             <option value="1">1</option>
@@ -125,11 +129,14 @@ for (let i = 1; i <= 10; i++) {
             <option value="4">4</option>
             <option value="5">5</option>
         </select>
+
     </div>
     `;
+
+    products.innerHTML+=html;
 }
 
-// 🚀 KÜLDÉS AZ APPS SCRIPTBE
+
 function kuldes(){
 
     const adat = {
@@ -149,31 +156,30 @@ function kuldes(){
         termek10: document.getElementById("termek10").value
     };
 
-    fetch("https://script.google.com/macros/s/AKfycbxA_MTVMEQ4BKUGrh9g-7-lr4ywRnsI8OvM42Sk4lTTl6FxnLYR0HX2qUVcVfg6aTs/exec", {
+    fetch("https://script.google.com/macros/s/AKfycbzjFnMhSrPNBhum4YskVXPyiUgbJpPXAqT4UHKNT7T_o9Mdg_zwAVJTt923EDHzxri9Xg/exec", {
         method: "POST",
-        redirect: "follow",
-        body: JSON.stringify(adat)
+        body: new URLSearchParams({
+            data: JSON.stringify(adat)
+        })
     })
-    .then(r => r.text())
-    .then(res => {
-        alert("Sikeres rendelés!");
+    .then(res => res.text())
+    .then(text => {
 
-        // reset
-        document.getElementById("nev").value = "";
-        document.getElementById("telefon").value = "";
-        document.getElementById("email").value = "";
+        console.log("Server válasz:", text);
 
-        for (let i = 1; i <= 10; i++) {
-            document.getElementById("termek" + i).value = "0";
+        if(text === "OK"){
+            alert("✅ Sikeres rendelés!");
+        } else {
+            alert("⚠️ Valami gond van: " + text);
         }
+
     })
     .catch(err => {
         console.log(err);
-        alert("Hiba történt a küldés során!");
+        alert("❌ Hiba történt a küldés során!");
     });
 
 }
-
 </script>
 
 </body>
