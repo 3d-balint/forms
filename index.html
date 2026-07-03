@@ -79,6 +79,16 @@ button{
 button:hover{
     background:#163b5c;
 }
+
+.note{
+    margin-top:20px;
+    padding:12px 15px;
+    background:#fff8e1;
+    border:1px solid #ffe082;
+    border-radius:8px;
+    font-size:14px;
+    color:#7a5c00;
+}
 </style>
 
 </head>
@@ -97,7 +107,13 @@ button:hover{
 <label>E-mail</label>
 <input id="email">
 
+<br><br>
+
 <div class="grid" id="products"></div>
+
+<div class="note">
+    Megjegyzés: ha a termék csak egy színből készül, a „Második szín" mezőnél válaszd, hogy „Nincs".
+</div>
 
 <button onclick="kuldes()">Rendelés elküldése</button>
 
@@ -109,13 +125,65 @@ button:hover{
 
 const products=document.getElementById("products");
 
+const szinek=["fehér","fekete","piros","kék","zöld","arany","sárga","szürke","narancs"];
+
+// ====== TERMÉKLISTA ======
+// Itt add meg a termékeidet: id, név, és a kép elérési útja.
+// A képeket tedd egy "kepek" mappába a html mellé, és itt írd be a fájlnevüket.
+// Példa: 1 = porgenytű  ->  { id:1, nev:"Porgenytű", kep:"kepek/porgenytu.jpg" }
+const termekLista = [
+    { id:1, nev:"Porgenytű", kep:"kepek/1.jpg" },
+    { id:2, nev:"Termék 2", kep:"kepek/2.jpg" },
+    { id:3, nev:"Termék 3", kep:"kepek/3.jpg" },
+    { id:4, nev:"Termék 4", kep:"kepek/4.jpg" },
+    { id:5, nev:"Termék 5", kep:"kepek/5.jpg" },
+    { id:6, nev:"Termék 6", kep:"kepek/6.jpg" },
+    { id:7, nev:"Termék 7", kep:"kepek/7.jpg" },
+    { id:8, nev:"Termék 8", kep:"kepek/8.jpg" },
+    { id:9, nev:"Termék 9", kep:"kepek/9.jpg" },
+    { id:10, nev:"Termék 10", kep:"kepek/10.jpg" }
+];
+// ==========================
+
+function termekOptions(){
+    let opts = `<option value="">Válassz terméket</option>`;
+    for(const t of termekLista){
+        opts += `<option value="${t.id}">${t.nev}</option>`;
+    }
+    return opts;
+}
+
+function szinOptions(masodik){
+    let opts = masodik ? `<option value="">Nincs</option>` : `<option value="">Válassz színt</option>`;
+    for(const sz of szinek){
+        opts += `<option value="${sz}">${sz.charAt(0).toUpperCase()+sz.slice(1)}</option>`;
+    }
+    return opts;
+}
+
+function termekValtozott(i){
+    const select = document.getElementById("termeknev"+i);
+    const imgBox = document.getElementById("kep"+i);
+    const talalt = termekLista.find(t => t.id == select.value);
+
+    if(talalt){
+        imgBox.innerHTML = `<img src="${talalt.kep}" alt="${talalt.nev}" style="max-width:100%;max-height:100%;object-fit:contain;" onerror="this.parentElement.innerHTML='Kép nem található';">`;
+    } else {
+        imgBox.innerHTML = "Kép helye";
+    }
+}
+
 for(let i=1;i<=10;i++){
 
     let html=`
     <div class="card">
-        <h3>Termék ${i}</h3>
+        <label>Termék kiválasztása</label>
 
-        <div class="img">
+        <select id="termeknev${i}" onchange="termekValtozott(${i})">
+            ${termekOptions()}
+        </select>
+
+        <div class="img" id="kep${i}">
             Kép helye
         </div>
 
@@ -130,6 +198,18 @@ for(let i=1;i<=10;i++){
             <option value="5">5</option>
         </select>
 
+        <label>Szín kiválasztása</label>
+
+        <select id="szin1_${i}">
+            ${szinOptions(false)}
+        </select>
+
+        <label>Második szín kiválasztása</label>
+
+        <select id="szin2_${i}">
+            ${szinOptions(true)}
+        </select>
+
     </div>
     `;
 
@@ -142,19 +222,15 @@ function kuldes(){
     const adat = {
         nev: document.getElementById("nev").value,
         telefon: document.getElementById("telefon").value,
-        email: document.getElementById("email").value,
-
-        termek1: document.getElementById("termek1").value,
-        termek2: document.getElementById("termek2").value,
-        termek3: document.getElementById("termek3").value,
-        termek4: document.getElementById("termek4").value,
-        termek5: document.getElementById("termek5").value,
-        termek6: document.getElementById("termek6").value,
-        termek7: document.getElementById("termek7").value,
-        termek8: document.getElementById("termek8").value,
-        termek9: document.getElementById("termek9").value,
-        termek10: document.getElementById("termek10").value
+        email: document.getElementById("email").value
     };
+
+    for(let i=1;i<=10;i++){
+        adat["termeknev"+i] = document.getElementById("termeknev"+i).value;
+        adat["termek"+i] = document.getElementById("termek"+i).value;
+        adat["termek"+i+"_szin1"] = document.getElementById("szin1_"+i).value;
+        adat["termek"+i+"_szin2"] = document.getElementById("szin2_"+i).value;
+    }
 
     fetch("https://script.google.com/macros/s/AKfycbzjFnMhSrPNBhum4YskVXPyiUgbJpPXAqT4UHKNT7T_o9Mdg_zwAVJTt923EDHzxri9Xg/exec", {
         method: "POST",
